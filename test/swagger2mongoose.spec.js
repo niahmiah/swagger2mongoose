@@ -1,5 +1,5 @@
 'use strict';
-var DEBUG = false;
+var DEBUG = true;
 
 var apiDoc = require('./swagger.json');
 
@@ -11,7 +11,7 @@ var s2m = new Swagger2Mongoose({
 var should = require('chai').should();
 
 describe('Swagger2Mongoose', function(){
-  var Person;
+  var schemas = {};
 
   after(function(){
     if(DEBUG){
@@ -24,11 +24,13 @@ describe('Swagger2Mongoose', function(){
 
   it('should create valid mongoose schemas', function itCb(){
     try{
-      Person = s2m.getMongooseSchema('Person');
+      schemas.Pet = s2m.getMongooseSchema('Pet');
+      schemas.User = s2m.getMongooseSchema('User');
+      schemas.Order = s2m.getMongooseSchema('Order');
     }catch(e){
       console.log(e.stack);
       should.not.exist(e);
     }
-    should.exist(Person);
+    should.exist(schemas.Pet);
   });
 });

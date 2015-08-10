@@ -1,100 +1,25 @@
 'use strict';
-var fs = require('fs');
-var changeCase = require('change-case');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-
+var helpers = require('./lib/helpers');
 
 function Swagger2Mongoose(options){
-  this.swagger = options.swaggerDoc;
+  this.swaggerDoc = options.swaggerDoc;
   this.modelDir = options.modelDir;
-  this.topLevelSchemas = [];
-  if(this.swagger){
-    var arr = [];
-    var schemasRaw = this.swagger.definitions;
-    var modelFiles = fs.readdirSync(this.modelDir);
-    for(var i = 0; i < modelFiles.length; i++){
-      var modelFileName = modelFiles[i].replace(/\.js$/, '');
-      for(var key in schemasRaw){
-        if(modelFileName === changeCase.lowerCaseFirst(key)){
-          arr.push(key);
-        }
-      }
-    }
-    this.topLevelSchemas = arr;
-  }
+  // top level schemas are the ones represented by a file in the model dir
+  this.topLevelSchemas = helpers.getTopLevelSchemas(this.swaggerDoc, this.modelDir);
+  // do a first pass to simply create empty objects for each schema, so that references will already be defined
+  this.schemas = helpers.buildEmptySchemaObject(this.swaggerDoc);
+  // then actually  build them
+  this.schemas = helpers.buildSchemaObject(this.swaggerDoc, this.schemas);
 }
-
-function iterateOverObject(object, mongooseSchemaObject){
-  var required = object.required || [];
-  for(var key in object.properties){
-    if(key !== 'schema'){
-      mongooseSchemaObject[key] = {}; // defaults to Mixed
-      var field = object.properties[key];
-
-      if(field.type === 'string' && field.format === 'date-time'){
-        mongooseSchemaObject[key].type = Date;
-      }else if(field.type === 'string'){
-        mongooseSchemaObject[key].type = String;
-      }else if(field.type === 'integer'){
-        mongooseSchemaObject[key].type = Number;
-      }
-
-      if(field.type === 'array' && field.items){
-        if(field.items.type === 'string' && field.items.format === 'date-time'){
-          mongooseSchemaObject[key].type = [Date];
-        }else if(field.items.type === 'string'){
-          mongooseSchemaObject[key].type = [String];
-        }else if(field.items.type === 'integer'){
-          mongooseSchemaObject[key].type = [Number];
-        }
-        if(field.items.enum){
-          mongooseSchemaObject[key].validate = function(v){
-            return v.every(function (val) {
-              return !!~field.items.enum.indexOf(val);
-            });
-          };
-        }
-      }
-
-      if(field.type === 'object' && field.properties){
-        iterateOverObject(field, mongooseSchemaObject);
-      }
-
-      if(field.enum){
-        mongooseSchemaObject[key].enum = field.enum;
-      }
-
-      if(field.$ref){
-        var refSchemaName = field.$ref.replace('#/definitions/', '');
-        if(self.topLevelSchemas.indexOf(refSchemaName) >= 0){
-          mongooseSchemaObject[key].type = Schema.Types.ObjectId;
-          mongooseSchemaObject[key].ref = refSchemaName;
-        }else{
-          mongooseSchemaObject[key].type = self.getMongooseSchemaObject(refSchemaName);
-        }
-      }
-
-      if(field.type !== 'object' && mongooseSchemaObject[key].type && required.indexOf(key) >= 0){
-        mongooseSchemaObject[key].required = true;
-      }
-    }
-  }
-}
-
-Swagger2Mongoose.prototype.getMongooseSchemaObject = function(name){
-  var self = this;
-  var jsonSchemas = self.swagger.definitions;
-  var mongooseSchemaObject = {};
-  if(!jsonSchemas[name]) throw new Error('Swagger definitions missing: ' + name + ' in ' + JSON.stringify(Object.keys(jsonSchemas)));
-  iterateOverObject(jsonSchemas[name], mongooseSchemaObject);
-  return mongooseSchemaObject;
-};
 
 Swagger2Mongoose.prototype.getMongooseSchema = function(name, collection){
-  var self = this;
-  var mongooseSchemaObject = self.getMongooseSchemaObject(name);
-  return new Schema(mongooseSchemaObject, {collection: collection});
+  if(!this.schemas[name]) throw new Error('Swagger definitions missing: ' + name + ' in ' + JSON.stringify(Object.keys(this.schemas)));
+  var options = {};
+  if (collection) { options.collection = collection; }
+  var s = this.schemas[name];
+  return new Schema(s, options);
 };
 
 module.exports = Swagger2Mongoose;
