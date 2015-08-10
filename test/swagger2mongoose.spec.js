@@ -1,5 +1,5 @@
 'use strict';
-var DEBUG = true;
+var DEBUG = false;
 
 var apiDoc = require('./swagger.json');
 
@@ -31,6 +31,8 @@ describe('Swagger2Mongoose', function(){
       console.log(e.stack);
       should.not.exist(e);
     }
+    (schemas.Pet.tree.tags.type instanceof Array).should.equal(true);
+    (schemas.Pet.tree.category instanceof Object).should.equal(true);
     should.exist(schemas.Pet);
   });
 });

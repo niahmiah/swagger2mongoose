@@ -12,9 +12,11 @@ function Swagger2Mongoose(options){
   this.schemas = helpers.buildEmptySchemaObject(this.swaggerDoc);
   // then actually  build them
   this.schemas = helpers.buildSchemaObject(this.swaggerDoc, this.schemas);
+  // do it once more to enable sub-schemas
+  this.schemas = helpers.buildSchemaObject(this.swaggerDoc, this.schemas);
 }
 
-Swagger2Mongoose.prototype.getMongooseSchema = function(name, collection){
+Swagger2Mongoose.prototype.getMongooseSchema = function getMongooseSchema(name, collection){
   if(!this.schemas[name]) throw new Error('Swagger definitions missing: ' + name + ' in ' + JSON.stringify(Object.keys(this.schemas)));
   var options = {};
   if (collection) { options.collection = collection; }

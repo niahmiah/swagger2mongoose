@@ -49,4 +49,4 @@ This can be used to generate mongoose schemas for your application, so that you 
 
 ### Known issues
 
-- Currently does not generate sub-schemas, sets type to mixed
+- Not all validations are enabled. Min, Max, Required, etc may not be enforced.
