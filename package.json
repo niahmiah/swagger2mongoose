@@ -1,6 +1,6 @@
 {
   "name": "swagger2mongoose",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Use Swagger Doc to create Mongoose Schema",
   "main": "index.js",
   "scripts": {
