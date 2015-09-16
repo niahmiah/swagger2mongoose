@@ -24,7 +24,12 @@ var s2m = new Swagger2Mongoose({
   modelDir: 'api/models'
 });
 
-var Schema = s2m.getMongooseSchema('People');
+var options = {
+  _id: false,
+  collection: 'people'
+}
+
+var Schema = s2m.getMongooseSchema('People', options);
 
 // decorate the Schema with methods before converting to a model
 Schema.methods.lastSeen = function lastSeen(callback){
