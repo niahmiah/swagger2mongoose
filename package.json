@@ -20,11 +20,11 @@
   "author": "Ian Patton <ian.patton@gmail.com> (http://github.com/niahmiah)",
   "license": "MIT",
   "dependencies": {
-    "change-case": "^2.3.0",
+    "change-case": "^3.0.1",
     "mongoose": "^4.1.0"
   },
   "devDependencies": {
-    "chai": "^3.2.0",
-    "mocha": "^2.2.5"
+    "chai": "^4.1.2",
+    "mocha": "^4.0.0"
   }
 }
