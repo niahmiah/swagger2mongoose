@@ -1,5 +1,7 @@
 # Swagger 2 Mongoose
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/niahmiah/swagger2mongoose.svg)](https://greenkeeper.io/)
+
 Dynamically generate mongoose schemas for your REST API, using your Swagger JSON.
 
 See http://swagger.io
